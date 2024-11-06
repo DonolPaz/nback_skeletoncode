@@ -1,19 +1,18 @@
 package mobappdev.example.nback_cimpl.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -21,18 +20,68 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import mobappdev.example.nback_cimpl.R
 import mobappdev.example.nback_cimpl.ui.viewmodels.FakeVM
+import mobappdev.example.nback_cimpl.ui.viewmodels.GameType
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+
+
+@Composable
+fun ConfigDialog(
+    onConfirm: (size: Int, combinations: Int, percentMatch: Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var size by remember { mutableStateOf(10) }
+    var combinations by remember { mutableStateOf(9) }
+    var percentMatch by remember { mutableStateOf(30) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(onClick = { onConfirm(size, combinations, percentMatch) }) {
+                Text("Start")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        title = { Text("Game Configuration") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = size.toString(),
+                    onValueChange = { size = it.toIntOrNull() ?: size },
+                    label = { Text("Size") }
+                )
+                OutlinedTextField(
+                    value = combinations.toString(),
+                    onValueChange = { combinations = it.toIntOrNull() ?: combinations },
+                    label = { Text("Combinations") }
+                )
+                OutlinedTextField(
+                    value = percentMatch.toString(),
+                    onValueChange = { percentMatch = it.toIntOrNull() ?: percentMatch },
+                    label = { Text("Percent Match") }
+                )
+            }
+        }
+    )
+}
 
 /**
  * This is the Home screen composable
@@ -49,16 +98,17 @@ import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
 
 @Composable
 fun HomeScreen(
-    vm: GameViewModel
+    vm: GameViewModel,
+    onStartGameClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
-    val highscore by vm.highscore.collectAsState()  // Highscore is its own StateFlow
-    val gameState by vm.gameState.collectAsState()
-    val snackBarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val highscore by vm.highscore.collectAsState()
+    val nBack by vm.nBack.collectAsState()
+    val eventInterval by vm.eventInterval.collectAsState()
+    val isAudioSelected by vm.isAudioSelected.collectAsState()
+    val isVisualSelected by vm.isVisualSelected.collectAsState()
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackBarHostState) }
-    ) {
+    Scaffold {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,37 +116,28 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Title with nBack value
             Text(
-                modifier = Modifier.padding(32.dp),
-                text = "High-Score = $highscore",
-                style = MaterialTheme.typography.headlineLarge
+                text = "$nBack-Back Game",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-            // Todo: You'll probably want to change this "BOX" part of the composable
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (gameState.eventValue != -1) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = "Current eventValue is: ${gameState.eventValue}",
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    Button(onClick = vm::startGame) {
-                        Text(text = "Generate eventValues")
-                    }
-                }
-            }
+
+            // High Score display with smaller text size
             Text(
-                modifier = Modifier.padding(16.dp),
-                text = "Start Game".uppercase(),
-                style = MaterialTheme.typography.displaySmall
+                text = "High Score = $highscore",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(16.dp)
             )
+
+            // Game Speed display
+            Text(
+                text = "Game Speed: ${eventInterval / 1000} sec",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+
+            // Toggle buttons for audio and visual game modes
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -104,50 +145,59 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(onClick = {
-                    // Todo: change this button behaviour
-                    scope.launch {
-                        snackBarHostState.showSnackbar(
-                            message = "Hey! you clicked the audio button"
-                        )
-                    }
-                }) {
+                Button(
+                    onClick = { vm.toggleAudioSelection() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isAudioSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                    )
+                ) {
                     Icon(
                         painter = painterResource(id = R.drawable.sound_on),
-                        contentDescription = "Sound",
-                        modifier = Modifier
-                            .height(48.dp)
-                            .aspectRatio(3f / 2f)
+                        contentDescription = "Audio",
+                        modifier = Modifier.height(48.dp)
                     )
                 }
                 Button(
-                    onClick = {
-                        // Todo: change this button behaviour
-                        scope.launch {
-                            snackBarHostState.showSnackbar(
-                                message = "Hey! you clicked the visual button",
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    }) {
+                    onClick = { vm.toggleVisualSelection() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isVisualSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                    )
+                ) {
                     Icon(
                         painter = painterResource(id = R.drawable.visual),
                         contentDescription = "Visual",
-                        modifier = Modifier
-                            .height(48.dp)
-                            .aspectRatio(3f / 2f)
+                        modifier = Modifier.height(48.dp)
                     )
                 }
+            }
+
+            // Start Game Button
+            Button(onClick = onStartGameClick) {
+                Text(
+                    text = "Start Game".uppercase(),
+                    style = MaterialTheme.typography.displaySmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Settings Button
+            Button(onClick = onSettingsClick) {
+                Text("Settings")
             }
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    // Since I am injecting a VM into my homescreen that depends on Application context, the preview doesn't work.
-    Surface(){
-        HomeScreen(FakeVM())
+    val fakeViewModel = FakeVM()
+    Surface {
+        HomeScreen(
+            vm = fakeViewModel,
+            onStartGameClick = { /* no-op for preview */ },
+            onSettingsClick = { /* no-op for preview */ }
+        )
     }
 }
