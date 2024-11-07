@@ -20,16 +20,15 @@ import mobappdev.example.nback_cimpl.ui.screens.navigation.Screen
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameType
 
 /**
- * This is the MainActivity of the application
+ * MainActivity serves as the entry point of the application.
+ * It sets up the navigation between different screens and manages the primary GameViewModel.
  *
- * Your navigation between the two (or more) screens should be handled here
- * For this application you need at least a homescreen (a start is already made for you)
- * and a gamescreen (you will have to make yourself, but you can use the same viewmodel)
+ * This activity handles navigation across the app’s three main screens:
+ * - HomeScreen: Displays the high score and allows users to start a game or access settings.
+ * - GameScreen: Hosts the main game logic, displaying either visual, audio, or audio-visual game types.
+ * - SettingsScreen: Allows users to configure game settings like grid size, match percentage, etc.
  *
- * Date: 25-08-2023
- * Version: Version 1.0
- * Author: Yeetivity
- *
+ * The app follows MVVM architecture, where this Activity instantiates and shares a single GameViewModel instance across screens.
  */
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +47,11 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = Screen.Home.route
                     ) {
+                        // Home Screen composable with game stopping logic in MainActivity
                         composable(Screen.Home.route) {
+                            // Stop any ongoing game before showing the HomeScreen
+                            gameViewModel.stopGame()
+
                             HomeScreen(
                                 vm = gameViewModel,
                                 onStartGameClick = {
@@ -58,15 +61,17 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Screen.Settings.route)
                                 }
                             )
-                            // Ensure we stop the game when navigating to Home
-                            gameViewModel.stopGame()
                         }
+
+                        // Settings Screen composable
                         composable(Screen.Settings.route) {
                             SettingsScreen(
                                 vm = gameViewModel,
                                 onSaveClick = { navController.navigate(Screen.Home.route) }
                             )
                         }
+
+                        // Game Screen composable with gameType argument
                         composable(
                             route = Screen.Game.ROUTE_WITH_ARGUMENT,
                             arguments = Screen.Game.arguments
@@ -78,9 +83,9 @@ class MainActivity : ComponentActivity() {
                                 gameType = gameType,
                                 vm = gameViewModel,
                                 onMatchClick = { gameViewModel.checkMatch() },
-                                onAudioMatchClick = { gameViewModel.checkAudioMatch() },  // Add this for audio match
+                                onAudioMatchClick = { gameViewModel.checkAudioMatch() },
                                 onHomeClick = {
-                                    // Navigate back to Home Screen
+                                    // Navigate back to Home Screen and clear back stack
                                     navController.navigate(Screen.Home.route) {
                                         popUpTo(Screen.Home.route) { inclusive = true }
                                     }

@@ -35,7 +35,17 @@ import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.AlertDialog
 
-
+/**
+ * Displays the main Game screen for different game types (Visual, Audio, Audio-Visual).
+ * Renders game events and provides match buttons based on the selected game type.
+ *
+ * @param gameType The type of the game (Visual, Audio, or Audio-Visual).
+ * @param vm The [GameViewModel] that holds the state and logic for the game.
+ * @param onMatchClick Callback invoked when the visual match button is clicked.
+ * @param onAudioMatchClick Callback invoked when the audio match button is clicked (only for Audio-Visual game).
+ * @param onHomeClick Callback invoked when navigating back to the Home screen.
+ * @param onPlayAgainClick Callback invoked to start a new game with the same configuration.
+ */
 @SuppressLint("StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -134,6 +144,14 @@ fun GameScreen(
     }
 }
 
+/**
+ * Renders the game event display based on the selected game type.
+ * Shows either a visual grid, an audio letter, or both.
+ *
+ * @param gameType The type of the game (Visual, Audio, or Audio-Visual).
+ * @param vm The [GameViewModel] providing the state of the current event.
+ * @param gridSize The size of the visual grid.
+ */
 @Composable
 fun GameEventDisplay(gameType: GameType, vm: GameViewModel, gridSize: Int) {
     val eventValue = vm.gameState.collectAsState().value.eventValue
@@ -146,6 +164,12 @@ fun GameEventDisplay(gameType: GameType, vm: GameViewModel, gridSize: Int) {
     }
 }
 
+/**
+ * Displays the visual event as a highlighted item in a grid based on event value and grid size.
+ *
+ * @param eventValue The value representing the visual event to be displayed.
+ * @param gridSize The size of the grid.
+ */
 @Composable
 fun VisualEventDisplay(eventValue: Int, gridSize: Int) {
     // Adjust eventValue by subtracting 1 to map 1-9 to 0-8
@@ -165,6 +189,11 @@ fun VisualEventDisplay(eventValue: Int, gridSize: Int) {
     }
 }
 
+/**
+ * Displays a single grid item. Highlights the cell if it matches the specified condition.
+ *
+ * @param isHighlighted Boolean indicating whether the item should be highlighted.
+ */
 @Composable
 fun GridItem(isHighlighted: Boolean) {
     // Define an Animatable scale for finer control
@@ -191,6 +220,11 @@ fun GridItem(isHighlighted: Boolean) {
     ) {}
 }
 
+/**
+ * Displays the audio event as a letter.
+ *
+ * @param eventValue The value representing the audio event, mapped to a letter.
+ */
 @Composable
 fun AudioEventDisplay(eventValue: Int) {
     val letter = remember(eventValue) {
@@ -213,6 +247,13 @@ fun AudioEventDisplay(eventValue: Int) {
     }
 }
 
+/**
+ * Displays both the visual and audio events together for the Audio-Visual game type.
+ *
+ * @param visualEvent The value representing the visual event.
+ * @param audioEvent The value representing the audio event, mapped to a letter.
+ * @param gridSize The size of the visual grid.
+ */
 @Composable
 fun AudioVisualEventDisplay(visualEvent: Int, audioEvent: Int, gridSize: Int) {
     // Display the visual event as a highlighted grid item
