@@ -34,8 +34,6 @@ import androidx.compose.ui.draw.scale
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.ui.tooling.preview.Preview
-import mobappdev.example.nback_cimpl.ui.viewmodels.FakeVM
 
 
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -45,6 +43,7 @@ fun GameScreen(
     gameType: GameType,
     vm: GameViewModel,
     onMatchClick: () -> Unit,
+    onAudioMatchClick: () -> Unit,  // Add this parameter for audio match
     onHomeClick: () -> Unit,
     onPlayAgainClick: () -> Unit
 ) {
@@ -90,9 +89,18 @@ fun GameScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Single Match button for all game types
-            Button(onClick = onMatchClick) {
-                Text("Match")
+            // Row to contain match buttons
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onMatchClick) {
+                    Text("Match")
+                }
+
+                // Show the second button only in AudioVisual mode
+                if (gameType == GameType.AudioVisual) {
+                    Button(onClick = onAudioMatchClick) {
+                        Text("Audio Match")
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

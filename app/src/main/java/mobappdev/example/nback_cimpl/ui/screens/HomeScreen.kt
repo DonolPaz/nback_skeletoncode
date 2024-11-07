@@ -13,87 +13,29 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import mobappdev.example.nback_cimpl.R
 import mobappdev.example.nback_cimpl.ui.viewmodels.FakeVM
-import mobappdev.example.nback_cimpl.ui.viewmodels.GameType
 import mobappdev.example.nback_cimpl.ui.viewmodels.GameViewModel
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
 
-
-@Composable
-fun ConfigDialog(
-    onConfirm: (size: Int, combinations: Int, percentMatch: Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var size by remember { mutableStateOf(10) }
-    var combinations by remember { mutableStateOf(9) }
-    var percentMatch by remember { mutableStateOf(30) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(onClick = { onConfirm(size, combinations, percentMatch) }) {
-                Text("Start")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        },
-        title = { Text("Game Configuration") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = size.toString(),
-                    onValueChange = { size = it.toIntOrNull() ?: size },
-                    label = { Text("Size") }
-                )
-                OutlinedTextField(
-                    value = combinations.toString(),
-                    onValueChange = { combinations = it.toIntOrNull() ?: combinations },
-                    label = { Text("Combinations") }
-                )
-                OutlinedTextField(
-                    value = percentMatch.toString(),
-                    onValueChange = { percentMatch = it.toIntOrNull() ?: percentMatch },
-                    label = { Text("Percent Match") }
-                )
-            }
-        }
-    )
-}
 
 /**
- * This is the Home screen composable
+ * Displays the Home screen for the N-back game, showing current configuration settings,
+ * a high score, and controls to start a game or adjust settings.
  *
- * Currently this screen shows the saved highscore
- * It also contains a button which can be used to show that the C-integration works
- * Furthermore it contains two buttons that you can use to start a game
- *
- * Date: 25-08-2023
- * Version: Version 1.0
- * Author: Yeetivity
- *
+ * @param vm The [GameViewModel] instance providing the current game settings and high score.
+ * @param onStartGameClick Callback invoked when the "Start Game" button is clicked.
+ * @param onSettingsClick Callback invoked when the "Settings" button is clicked.
  */
 
 @Composable

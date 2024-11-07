@@ -78,6 +78,7 @@ class MainActivity : ComponentActivity() {
                                 gameType = gameType,
                                 vm = gameViewModel,
                                 onMatchClick = { gameViewModel.checkMatch() },
+                                onAudioMatchClick = { gameViewModel.checkAudioMatch() },  // Add this for audio match
                                 onHomeClick = {
                                     // Navigate back to Home Screen
                                     navController.navigate(Screen.Home.route) {
