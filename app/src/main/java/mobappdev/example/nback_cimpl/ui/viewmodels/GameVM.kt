@@ -19,7 +19,6 @@ import mobappdev.example.nback_cimpl.GameApplication
 import mobappdev.example.nback_cimpl.NBackHelper
 import mobappdev.example.nback_cimpl.data.UserPreferencesRepository
 import java.util.Locale
-import kotlin.system.exitProcess
 
 /**
  * This is the GameViewModel.
@@ -70,6 +69,26 @@ interface GameViewModel {
     fun checkMatch()
 }
 
+/**
+ * GameVM is the ViewModel for the N-Back game, responsible for managing the game state,
+ * handling interactions between the game logic and UI, and providing data to the UI.
+ *
+ * The ViewModel uses the StateFlow API to expose various game properties, such as
+ * game settings, scores, and match states, which the UI observes to render updates.
+ * This class also supports Text-to-Speech functionality for the audio game mode.
+ *
+ * @property userPreferencesRepository A repository that manages user preferences, such as high scores.
+ * @property context The application context, used for initializing resources like Text-to-Speech.
+ *
+ * Functions:
+ * - [startGame]: Initializes and starts the game with the specified configuration.
+ * - [stopGame]: Stops any ongoing game, releasing resources if necessary.
+ * - [checkMatch]: Verifies if the current visual event matches the previous one in N-back logic.
+ * - [checkAudioMatch]: Similar to checkMatch, but verifies audio events for N-back matching.
+ * - [toggleAudioSelection] and [toggleVisualSelection]: Toggles selection for audio and visual modes.
+ * - [onCleared]: Overrides the ViewModel's lifecycle end behavior, releasing Text-to-Speech resources.
+ *
+ */
 class GameVM(
     private val userPreferencesRepository: UserPreferencesRepository,
     context: Context
